@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { defaultBundlePath, serveWorkerAsset } from './worker-asset.js'
 
 let dir: string
@@ -100,19 +101,21 @@ describe('serveWorkerAsset', () => {
 })
 
 describe('defaultBundlePath', () => {
+  // `file:///repo/...` is not an absolute file URL on Windows (it has no drive
+  // letter), so build the URL and the expected path from the platform's own root.
+  const root = resolve('/repo')
+  const moduleUrl = pathToFileURL(join(root, 'apps/hub-mcp/dist/node.js')).href
+  const sibling = join(root, 'apps/conductor-worker/dist/cortex-worker.mjs')
+
   it('honours CONDUCTOR_WORKER_PATH', () => {
-    expect(defaultBundlePath({ CONDUCTOR_WORKER_PATH: '/x/w.mjs' }, 'file:///a/b/node.js')).toBe('/x/w.mjs')
+    expect(defaultBundlePath({ CONDUCTOR_WORKER_PATH: '/x/w.mjs' }, moduleUrl)).toBe('/x/w.mjs')
   })
 
   it('falls back to the default when CONDUCTOR_WORKER_PATH is empty', () => {
-    expect(defaultBundlePath({ CONDUCTOR_WORKER_PATH: '' }, 'file:///repo/apps/hub-mcp/dist/node.js')).toBe(
-      '/repo/apps/conductor-worker/dist/cortex-worker.mjs',
-    )
+    expect(defaultBundlePath({ CONDUCTOR_WORKER_PATH: '' }, moduleUrl)).toBe(sibling)
   })
 
   it('falls back to the sibling conductor-worker dist', () => {
-    expect(defaultBundlePath({}, 'file:///repo/apps/hub-mcp/dist/node.js')).toBe(
-      '/repo/apps/conductor-worker/dist/cortex-worker.mjs',
-    )
+    expect(defaultBundlePath({}, moduleUrl)).toBe(sibling)
   })
 })
