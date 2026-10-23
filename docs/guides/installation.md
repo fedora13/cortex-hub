@@ -7,13 +7,13 @@
 ## Quick Start (All-in-One)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<org>/cortex-hub/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lktiep/cortex-hub/master/install.sh | bash
 ```
 
 Or manually:
 
 ```bash
-git clone https://github.com/<org>/cortex-hub.git
+git clone https://github.com/lktiep/cortex-hub.git
 cd cortex-hub
 ./infra/scripts/install.sh
 ```

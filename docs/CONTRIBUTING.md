@@ -6,12 +6,15 @@
 
 ## Development Setup
 
-```bash
-# Clone the repository
-git clone https://github.com/<org>/cortex-hub.git
-cd cortex-hub
+Fork [lktiep/cortex-hub](https://github.com/lktiep/cortex-hub) on GitHub, then:
 
-# Install dependencies
+```bash
+# Clone your fork and keep the original as `upstream`
+git clone https://github.com/<your-username>/cortex-hub.git
+cd cortex-hub
+git remote add upstream https://github.com/lktiep/cortex-hub.git
+
+# Install dependencies (Node >= 22, pnpm >= 10)
 corepack enable
 pnpm install
 
@@ -19,26 +22,32 @@ pnpm install
 pnpm dev
 ```
 
+`pnpm install` also installs the [lefthook](../lefthook.yml) git hooks: build, typecheck and lint run
+on commit, and the tests run on push.
+
 ---
 
 ## Branch Strategy
 
 | Branch | Purpose |
 |---|---|
-| `main` | Production-ready code |
-| `develop` | Integration branch |
+| `master` | The only long-lived branch. Every merge builds and publishes images, and CI commits the release bump. |
 | `feat/<name>` | New features |
 | `fix/<name>` | Bug fixes |
 | `docs/<name>` | Documentation updates |
 
 ```bash
-# Create a feature branch
-git checkout -b feat/add-knowledge-search develop
+# Create a feature branch from an up-to-date master
+git fetch upstream
+git checkout -b feat/add-knowledge-search upstream/master
 
 # After work is complete
-git push origin feat/add-knowledge-search
-# Open PR → develop
+git push -u origin feat/add-knowledge-search
+# Open a PR against lktiep/cortex-hub → master
 ```
+
+Because a merge to `master` ships, keep each PR small and single-purpose, and say in the description
+how you checked it.
 
 ---
 
@@ -91,11 +100,13 @@ function formatDate(d: Date) { /* ... */ }
 
 ## Pull Request Checklist
 
-- [ ] Branch is up-to-date with `develop`
-- [ ] All tests pass: `pnpm -r test`
-- [ ] Types check: `pnpm -r typecheck`
-- [ ] Lint clean: `pnpm -r lint`
+- [ ] Branch is up-to-date with `master`
+- [ ] Builds: `pnpm build` (the whole workspace, not `--filter`)
+- [ ] Types check: `pnpm typecheck`
+- [ ] Lint clean: `pnpm lint` (no new errors or warnings)
+- [ ] Tests pass for what you changed: `pnpm test`
 - [ ] Conventional commit message
+- [ ] PR description says what changed, why, and how you checked it
 - [ ] Documentation updated (if applicable)
 - [ ] No `TODO` or `FIXME` left in code
 

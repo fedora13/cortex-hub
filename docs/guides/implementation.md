@@ -134,7 +134,7 @@ With `API_AUTH=required`, `/api` accepts only:
 ### 2.1 — Clone and Initialize
 
 ```bash
-git clone https://github.com/<org>/cortex-hub.git /opt/cortex-hub
+git clone https://github.com/lktiep/cortex-hub.git /opt/cortex-hub
 cd /opt/cortex-hub
 
 # Install dependencies
