@@ -32,6 +32,32 @@ Findings that need an already-compromised host, or a deployment that deliberatel
 off (for example `API_AUTH=off` on a public address), are out of scope, but we are glad to hear about
 unsafe defaults.
 
+## Deployment model, and how it sets severity
+
+Cortex Hub is designed to run as two surfaces with different exposure. We rate a report by which one
+it affects.
+
+| Surface | Intended exposure | Protected by |
+|---|---|---|
+| **MCP endpoint** (`hub-mcp`, `/mcp`) | Internet-facing, so agents on any machine can use it | API keys only |
+| **Dashboard and API** (`dashboard-web`, `dashboard-api`, `/api`) | Never reachable directly | An identity-aware proxy in front of it, such as Cloudflare Access |
+
+**The MCP endpoint is high severity.** An API key is its only control, so anything that gets past the
+key check, or that lets a valid key reach data it should not (another organization's memories,
+knowledge, code index or projects, or a tool its key does not allow), is a high-severity issue.
+
+**The Dashboard and API must sit behind an identity-aware proxy and must not be exposed directly.**
+A weakness there matters mainly when it works without passing the proxy. One that needs a user who
+has already been admitted by the proxy is rated lower.
+
+To deploy it that way:
+
+- Publish the API ports on loopback only (`API_BIND=127.0.0.1`) when the tunnel or reverse proxy runs
+  on the same host.
+- Set `API_AUTH=required`, with `CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD` for Cloudflare Access. The
+  proxy is the front door; this setting is defense in depth if it is ever bypassed or misconfigured.
+- Keep the MCP endpoint reachable by agents, and give each agent its own key (see below).
+
 ## Hardening a deployment
 
 Cortex Hub stores your code index, agent memory and git credentials, so treat the host as sensitive.
